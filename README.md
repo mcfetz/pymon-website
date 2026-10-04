@@ -1,7 +1,7 @@
 # pymon-website
 
-Source for **[pymon.dev](https://pymon.dev)** — the landing page for the pymon
-monitoring stack.
+Source for the pymon monitoring stack landing page, published at
+**<https://mcfetz.github.io/pymon-website/>**.
 
 A plain static site: one HTML file, one stylesheet, one SVG. No build step, no
 framework, no external requests (no web fonts, no CDN, no analytics). It is
