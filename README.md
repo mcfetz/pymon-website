@@ -52,10 +52,10 @@ marketing. When changing behaviour, update the page in the same commit:
 | Environment variables | `pymon-server/docker-compose.yml`, `pymon-web/docker-entrypoint.sh` |
 | Feature descriptions | `pymon-server/README.md`, `pymon-web/README.md` |
 
-Note that `pymon-server/README.md` lags behind the code in places. The
-`fire=single` row still claims "at most one open alarm per (agent, rule)", while
-`rules.py` keys on `(agentid, pluginid, metric)`. The website follows the code.
-Worth fixing the README in the same change that touched the behaviour.
+`pymon-server/README.md` lagged behind the code in one place: the `fire=single`
+row claimed "at most one open alarm per (agent, rule)" while `rules.py` keys on
+`(agentid, pluginid, metric)`. The README now matches the code, and so does the
+website.
 
 ## Publishing
 
