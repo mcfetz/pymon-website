@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>pymon — Self-hosted monitoring with your own rules</title>
+<meta name="description" content="pymon is a self-hosted monitoring stack: an agent that runs on your hosts, a server that evaluates your rules, and a web UI that makes the result obvious. No SaaS, no per-host pricing.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#060910">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="pymon — Self-hosted monitoring with your own rules">
+<meta property="og:description" content="Agent, server and web UI. Your infrastructure, your rules, your data.">
+<meta property="og:image" content="assets/logo.svg">
+<meta name="twitter:card" content="summary">
+
+<link rel="stylesheet" href="assets/style.css">
+
+<!-- Gates the scroll-reveal start state. Without JS this class is absent and
+     every element renders visible, so content can never be lost to a failed
+     observer callback. -->
+<script>document.documentElement.className += " js";</script>
+</head>
+<body>
+
+<div class="bg-decor" aria-hidden="true"></div>
+
+<!-- ============================== header ============================== -->
+<header class="site-header" id="top">
+  <nav class="wrap nav" aria-label="Main">
+    <a class="brand" href="#top">
+      <img src="assets/logo.svg" alt="" width="30" height="30">
+      <span>pymon</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Toggle navigation">
+      <span></span>
+    </button>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#stack">Stack</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#rules">Rule engine</a></li>
+      <li><a href="#plugins">Plugins</a></li>
+      <li><a href="#self-host">Self-host</a></li>
+      <li><a href="https://github.com/mcfetz/pymon-server" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============================== hero ============================== -->
+<section class="hero wrap">
+  <span class="eyebrow">Self-hosted · Open source</span>
+
+  <h1>Your infrastructure.<br><span class="grad-text">Your rules.</span> Your data.</h1>
+
+  <p class="lede">
+    pymon is a monitoring stack made of three small pieces: an agent that runs on
+    your hosts, a server that evaluates the rules you actually care about, and a
+    web UI that makes the result obvious. No SaaS, no per-host pricing, and no
+    telemetry leaving your network.
+  </p>
+
+  <div class="btn-row">
+    <a class="btn btn-primary" href="#self-host">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M2 12h20"/></svg>
+      Host it yourself
+    </a>
+    <a class="btn btn-ghost" href="https://github.com/mcfetz/pymon-server" target="_blank" rel="noopener">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.5 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.25 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
+      Source on GitHub
+    </a>
+  </div>
+
+  <div class="hero-badges">
+    <span class="pill">Flask · SQLAlchemy</span>
+    <span class="pill">Svelte 5 · Vite</span>
+    <span class="pill">SQLite or PostgreSQL</span>
+    <span class="pill">REST API · Swagger UI</span>
+  </div>
+
+  <!-- Illustrative panel — a stylised view of the kind of data pymon shows,
+       deliberately not presented as a product screenshot. -->
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hero-visual__bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="hero-visual__title">pymon — illustrative overview</span>
+    </div>
+
+    <div class="hero-grid">
+      <div class="tile">
+        <div class="tile__label">CPU load</div>
+        <div class="tile__value ok">34.2<small> %</small></div>
+        <div class="tile__spark">
+          <svg viewBox="0 0 120 30" fill="none"><polyline points="0,26 12,22 24,24 36,14 48,18 60,10 72,14 84,8 96,12 108,6 120,11" stroke="#34d399" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="tile__label">Memory</div>
+        <div class="tile__value ok">61.8<small> %</small></div>
+        <div class="tile__spark">
+          <svg viewBox="0 0 120 30" fill="none"><polyline points="0,20 12,19 24,21 36,17 48,18 60,15 72,17 84,14 96,16 108,13 120,15" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="tile__label">Cert expiry</div>
+        <div class="tile__value">143<small> days</small></div>
+        <div class="tile__spark">
+          <svg viewBox="0 0 120 30" fill="none"><polyline points="0,8 12,9 24,9 36,11 48,11 60,13 72,13 84,15 96,15 108,17 120,17" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="tile__label">Open alarms</div>
+        <div class="tile__value crit">3<small> · 1 critical</small></div>
+        <div class="tile__spark">
+          <svg viewBox="0 0 120 30" fill="none"><polyline points="0,27 12,27 24,27 36,26 48,20 60,8 72,26 84,26 96,25 108,24 120,25" stroke="#fb7185" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat__num">19</div><div class="stat__label">metric plugins</div></div>
+    <div class="stat"><div class="stat__num">9</div><div class="stat__label">rule conditions</div></div>
+    <div class="stat"><div class="stat__num">4</div><div class="stat__label">evaluation scopes</div></div>
+    <div class="stat"><div class="stat__num">3</div><div class="stat__label">services, your metal</div></div>
+  </div>
+</section>
+
+<!-- ============================== stack ============================== -->
+<section id="stack" class="wrap">
+  <div class="section-head center">
+    <span class="eyebrow">The stack</span>
+    <h2>Three pieces, one system</h2>
+    <p class="lede">
+      Each part is useful on its own and boring on purpose: small surface area,
+      plain HTTP between components, and a configuration format you can read.
+    </p>
+  </div>
+
+  <div class="grid grid-3">
+    <article class="card reveal">
+      <span class="card-tag">pymon-agent</span>
+      <h3>The agent</h3>
+      <p>
+        A single Python file that installs itself as a service, downloads its
+        assigned plugins from the server, runs each one in its own thread and
+        pushes the results back every few seconds.
+      </p>
+      <p>
+        It refreshes its plugin list and config on a timer, reports its own
+        version, updates itself, and carries a watchdog that restarts it if
+        ingest stalls. Plugins keep their state in a small file, so derived
+        values survive a restart.
+      </p>
+    </article>
+
+    <article class="card reveal">
+      <span class="card-tag">pymon-server</span>
+      <h3>The server</h3>
+      <p>
+        Flask and SQLAlchemy behind a plain REST API. It stores incoming metrics,
+        evaluates your rules, maintains the alarm lifecycle, dispatches
+        notifications and shell executors, and serves the plugin source that the
+        agents pull.
+      </p>
+      <p>
+        SQLite is the default; PostgreSQL is a single environment variable away,
+        including a one-shot, id-batched migration of an existing database. A
+        built-in Swagger UI documents every endpoint.
+      </p>
+    </article>
+
+    <article class="card reveal">
+      <span class="card-tag">pymon-web</span>
+      <h3>The web UI</h3>
+      <p>
+        Svelte 5 and Vite behind nginx, styled with a glassy dark and light theme.
+        Dashboards group panels into one- or two-column grids with per-panel
+        comments, filters, a problem-only view and full screen for both chart and
+        table.
+      </p>
+      <p>
+        Installable as a PWA with web push, and it ships an in-browser plugin
+        editor with syntax checking so you never leave the UI to fix a plugin.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- =========================== architecture =========================== -->
+<section id="architecture" class="wrap">
+  <div class="section-head center">
+    <span class="eyebrow">Architecture</span>
+    <h2>Nothing clever, just clear</h2>
+    <p class="lede">
+      Agents push metrics and pull plugins. The server never dials out to your
+      hosts, which means the agent is the only component that needs inbound
+      access to anything — and the only one you have to trust with a command.
+    </p>
+  </div>
+
+  <div class="arch reveal">
+    <svg viewBox="0 0 1000 440" role="img" aria-label="Architecture diagram: agents push metrics to the server and download plugins from it; the server serves the web UI and dispatches notifications and executors.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#2dd4bf"/>
+        </marker>
+        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#38bdf8"/>
+        </marker>
+      </defs>
+
+      <!-- agents -->
+      <g class="arch-node">
+        <rect x="16" y="76" width="170" height="76" rx="12"/>
+        <text class="t1" x="34" y="106">pymon-agent</text>
+        <text class="t2" x="34" y="126">host A · threads per plugin</text>
+        <text class="t2" x="34" y="141">systemd or Docker</text>
+      </g>
+      <g class="arch-node">
+        <rect x="16" y="248" width="170" height="76" rx="12"/>
+        <text class="t1" x="34" y="278">pymon-agent</text>
+        <text class="t2" x="34" y="298">host B · watchdog</text>
+        <text class="t2" x="34" y="313">self-updating</text>
+      </g>
+
+      <!-- server -->
+      <g class="arch-node">
+        <rect x="372" y="140" width="252" height="160" rx="14"/>
+        <text class="t1" x="396" y="176">pymon-server</text>
+        <text class="t2" x="396" y="200">Flask · SQLAlchemy</text>
+        <text class="t2" x="396" y="218">metric store (SQLite / PostgreSQL)</text>
+        <text class="t2" x="396" y="236">rule engine · alarm lifecycle</text>
+        <text class="t2" x="396" y="254">cron scheduler · retention job</text>
+        <text class="t2" x="396" y="276">plugin source registry</text>
+      </g>
+
+      <!-- web -->
+      <g class="arch-node">
+        <rect x="744" y="52" width="240" height="84" rx="12"/>
+        <text class="t1" x="764" y="82">pymon-web</text>
+        <text class="t2" x="764" y="102">Svelte 5 · nginx · PWA</text>
+        <text class="t2" x="764" y="120">browser · JWT session</text>
+      </g>
+
+      <!-- alerts out -->
+      <g class="arch-node">
+        <rect x="744" y="252" width="240" height="84" rx="12"/>
+        <text class="t1" x="764" y="282">Alerts out</text>
+        <text class="t2" x="764" y="302">ntfy · e-mail · web push</text>
+        <text class="t2" x="764" y="320">Twilio call · shell executors</text>
+      </g>
+
+      <!-- metrics up -->
+      <path class="arch-flow" d="M186 114 H330 V206 H366" marker-end="url(#ar)"/>
+      <text class="arch-label" x="196" y="104">POST /push/&lt;agentid&gt;</text>
+
+      <path class="arch-flow" d="M186 286 H330 V266 H366" marker-end="url(#ar)"/>
+      <text class="arch-label" x="196" y="304">agentid + X-API-Key</text>
+
+      <!-- plugin source back down -->
+      <path class="arch-flow alt" d="M498 300 V372 H101 V330" marker-end="url(#ar2)"/>
+      <text class="arch-label" x="250" y="390">GET /plugins/&lt;name&gt; — plugin source</text>
+
+      <!-- server to web -->
+      <path class="arch-flow alt" d="M624 196 H700 V94 H738" marker-end="url(#ar2)"/>
+      <text class="arch-label" x="632" y="180">JWT · REST</text>
+
+      <!-- server to alerts -->
+      <path class="arch-flow" d="M624 244 H700 V294 H738" marker-end="url(#ar)"/>
+      <text class="arch-label" x="640" y="288">rule → alarm</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ============================== features ============================== -->
+<section id="features" class="wrap">
+  <div class="section-head center">
+    <span class="eyebrow">Features</span>
+    <h2>The parts that actually matter day to day</h2>
+  </div>
+
+  <div class="grid grid-3">
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <h3>A rule engine, not a threshold field</h3>
+      <p>Four evaluation scopes, nine conditions and three fire modes per rule — so "average over 5 samples", "3 of the last 10", "the delta grew" and "nothing arrived for 300s" are all first class.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></div>
+      <h3>Store less, alert the same</h3>
+      <p>Unchanged values are discarded inside a heartbeat window and only written when something actually moves. Long-lived stable metrics cost almost nothing, while ratio rules still count every sample they would have seen.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg></div>
+      <h3>Match any metric</h3>
+      <p>A rule targets one exact metric name, a full-match regular expression such as <code>temperature_.*</code>, or <code>*</code> for everything a plugin reports.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+      <h3>Alerts where you already are</h3>
+      <p>ntfy, e-mail via SMTP, browser web push and Twilio voice calls. Every target is testable from the UI, and the SMTP password stays in an environment variable instead of the config file.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <h3>Executors, on your terms</h3>
+      <p>Any rule can run a shell command, either on the server or pushed to the agent that raised the alarm, with <code>{rule_id}</code>, <code>{agentid}</code>, <code>{metric}</code>, <code>{value}</code> and more substituted in.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div>
+      <h3>Planned downtime stays quiet</h3>
+      <p>Blackout windows suppress alarms or only the notifications, scoped by weekday and time, with overnight ranges supported. Target specific rules, agents or groups — or go global for a maintenance night.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+      <h3>Dashboards worth looking at</h3>
+      <p>One- or two-column grids, sticky controls, per-panel comments in an info modal, a text filter and a problem-only view. Panels open full screen as chart or table, capped so a wide query stays responsive.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+      <h3>Alarms with context</h3>
+      <p>Detail view shows nearby same-rule alarms on both sides of the current one with their signed distance, per-rule incident statistics instead of a useless alarm-to-alarm median, plus snoozes and acknowledgements.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+      <h3>Scheduled work, not just alerts</h3>
+      <p>crontab-style tasks are evaluated on the server in your local timezone and handed to the right agent exactly once. The agent runs the command under a timeout and reports exit code and duration as alertable metrics.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></div>
+      <h3>Retention you stop thinking about</h3>
+      <p>A nightly job deletes metrics past the retention period in small batches, releasing the write lock between batches so ingest keeps flowing, and reports what the last run removed.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg></div>
+      <h3>SQLite or PostgreSQL</h3>
+      <p>The default is a single SQLite file — ideal for a homelab. Set one variable to move to PostgreSQL, and let the server migrate an existing database in id-batched steps at startup.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <h3>Boring where it counts</h3>
+      <p>JWT sessions for the UI, per-agent API keys compared in constant time, login rate limiting, plugin paths checked against a strict allowlist, executor commands run without a shell, and atomic config writes.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ============================== rules ============================== -->
+<section id="rules" class="wrap">
+  <div class="section-head center">
+    <span class="eyebrow">Rule engine</span>
+    <h2>Four ways to decide something is wrong</h2>
+    <p class="lede">
+      The scope decides what a rule looks at, the condition decides what counts as
+      a violation, and the fire mode decides how often you get told.
+    </p>
+  </div>
+
+  <div class="rule-tables">
+    <div class="panel reveal">
+      <h3><span class="n">1</span> Evaluation scopes</h3>
+      <dl class="spec">
+        <div><dt><code>single</code></dt><dd>Evaluate each individual measurement.</dd></div>
+        <div><dt><code>moving_avg</code></dt><dd>Average of the last <code>window_size</code> measurements.</dd></div>
+        <div><dt><code>count_ratio</code></dt><dd>How many of the last <code>window_size</code> measurements violate the threshold. Fires at <code>min_violations</code>.</dd></div>
+        <div><dt><code>change</code></dt><dd>Delta between current and previous value; the threshold is compared against the delta.</dd></div>
+      </dl>
+    </div>
+
+    <div class="panel reveal">
+      <h3><span class="n">2</span> Conditions</h3>
+      <div class="chips">
+        <span class="chip">gt</span><span class="chip">ge</span>
+        <span class="chip">lt</span><span class="chip">le</span>
+        <span class="chip">eq</span><span class="chip">ne</span>
+        <span class="chip">between</span><span class="chip">outside</span>
+        <span class="chip">no_data</span>
+      </div>
+      <p style="margin-top:1rem;font-size:.9rem">
+        Range conditions use <code>threshold_min</code> and <code>threshold_max</code>.
+        <code>no_data</code> fires when a metric that has been seen at least once
+        stops arriving for <code>threshold</code> seconds — useful for dead lines
+        and silent sensors that would otherwise look perfectly healthy.
+      </p>
+    </div>
+
+    <div class="panel reveal">
+      <h3><span class="n">3</span> Fire modes</h3>
+      <dl class="spec">
+        <div><dt><code>single</code></dt><dd>At most one open alarm per agent, plugin and metric. Sibling plugins each open their own alarm instead of swallowing each other.</dd></div>
+        <div><dt><code>multi</code></dt><dd>A new alarm on every violation.</dd></div>
+        <div><dt><code>replace</code></dt><dd>Acknowledge the open alarms for that combination, then raise one fresh alarm.</dd></div>
+      </dl>
+      <p style="margin-top:1rem;font-size:.9rem">
+        <code>auto_close</code> works with all three: the moment a rule stops
+        triggering, its open alarms are acknowledged automatically.
+      </p>
+    </div>
+  </div>
+
+  <div class="tip reveal" style="margin-top:1.05rem">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+    <div>
+      <strong>Scope rules to agents the way you expect.</strong>
+      An empty agent list with <code>agents_mode: "exclude"</code> means "applies to
+      everyone". Switch to <code>include</code> to whitelist, or keep
+      <code>exclude</code> with a list to blacklist — the same rule structure covers
+      a global threshold and a host-specific exception.
+    </div>
+  </div>
+</section>
+
+<!-- ============================== plugins ============================== -->
+<section id="plugins" class="wrap">
+  <div class="section-head center">
+    <span class="eyebrow">Plugins</span>
+    <h2>19 collectors, and you can write the twentieth</h2>
+    <p class="lede">
+      A plugin is a Python file that exposes a <code>run(config)</code> function and
+      returns a flat dictionary of metric values. The server ships them, the agent
+      downloads them, and the web UI lets you edit them with syntax checking.
+    </p>
+  </div>
+
+  <div class="plugin-groups">
+    <div class="plugin-group reveal">
+      <h3>Host &amp; system</h3>
+      <p>Load, memory, disks, interfaces, temperatures and service states.</p>
+      <div class="chips">
+        <span class="chip">host</span><span class="chip">cpu</span><span class="chip">ram</span>
+        <span class="chip">disk_usage</span><span class="chip">network</span>
+        <span class="chip">temperature</span><span class="chip">services</span>
+      </div>
+    </div>
+
+    <div class="plugin-group reveal">
+      <h3>Network &amp; reachability</h3>
+      <p>Latency, packet loss, HTTP endpoints and certificate lifetimes.</p>
+      <div class="chips">
+        <span class="chip">ping</span><span class="chip">http_check</span>
+        <span class="chip">cert_valid</span><span class="chip">external_ip</span>
+      </div>
+    </div>
+
+    <div class="plugin-group reveal">
+      <h3>Container &amp; virtualisation</h3>
+      <p>Per-container resource usage, Swarm-aware service health, and your hypervisors.</p>
+      <div class="chips">
+        <span class="chip">docker_host</span><span class="chip">proxmox</span>
+        <span class="chip">synology_dsm</span><span class="chip">unifi_gateway</span>
+      </div>
+    </div>
+
+    <div class="plugin-group reveal">
+      <h3>Telco &amp; budget</h3>
+      <p>A DSL modem line in real detail, and provider balances as alertable numbers.</p>
+      <div class="chips">
+        <span class="chip">vigor130</span><span class="chip">ucg_eth4</span>
+        <span class="chip">openrouter-costs</span><span class="chip">twilio-costs</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:1.05rem">
+    <article class="card reveal">
+      <span class="card-tag">vigor130</span>
+      <h3>A DSL line, not just "up" or "down"</h3>
+      <p>
+        Scrapes the authenticated status page of a DrayTek Vigor 130 and reports sync
+        rates, SNR, attenuation, line state, error counters and system uptime per
+        direction. A persistent state file turns raw counters into deltas and
+        per-hour rates, and distinguishes a line resync from a modem reboot.
+      </p>
+      <p>
+        Credentials and session tokens are never emitted, and a failed scrape only
+        lowers a success flag — it can never fabricate an outage.
+      </p>
+    </article>
+
+    <article class="card reveal">
+      <span class="card-tag">docker_host</span>
+      <h3>Containers you can actually reason about</h3>
+      <p>
+        CPU, memory, pids, block IO and network counters per container, plus
+        image update checks. Swarm task containers are tracked at service level,
+        because their restart during a rollout is expected behaviour rather than an
+        outage.
+      </p>
+      <p>
+        Unhealthy containers are skipped by the update check, and hosts whose images
+        ship no <code>HEALTHCHECK</code> would silently lose coverage — the count of
+        skipped containers is reported instead of vanishing.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- ============================== self-host ============================== -->
+<section id="self-host" class="wrap">
+  <div class="section-head center">
+    <span class="eyebrow">Self-host</span>
+    <h2>Two commands and you are monitoring</h2>
+    <p class="lede">
+      Images are published per release and also track <code>latest</code>. Run the
+      server and the web UI, point an agent at them, and you are done.
+    </p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="code reveal">
+      <div class="code__head">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="code__file">server</span>
+        <button class="copy" data-copy="code-server">Copy</button>
+      </div>
+<pre id="code-server"><span class="c"># stores its database in the pymon-data volume</span>
+<span class="k">docker run</span> -d <span class="f">--name</span> pymon-server <span class="f">--restart</span> unless-stopped \
+  <span class="f">-p</span> 5000:5000 \
+  <span class="f">-v</span> pymon-data:/data \
+  <span class="f">-e</span> PYMON_CORS_ORIGINS=<span class="s">"https://pymon.example.com"</span> \
+  ghcr.io/mcfetz/pymon-server:latest</pre>
+    </div>
+
+    <div class="code reveal">
+      <div class="code__head">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="code__file">web</span>
+        <button class="copy" data-copy="code-web">Copy</button>
+      </div>
+<pre id="code-web"><span class="c"># nginx proxies /api/* to the server, no CORS juggling</span>
+<span class="k">docker run</span> -d <span class="f">--name</span> pymon-web <span class="f">--restart</span> unless-stopped \
+  <span class="f">-p</span> 80:80 \
+  <span class="f">-e</span> PYMON_API_URL=<span class="s">"http://pymon-server:5000"</span> \
+  ghcr.io/mcfetz/pymon-web:latest</pre>
+    </div>
+  </div>
+
+  <div class="code reveal" style="margin-top:1.05rem">
+    <div class="code__head">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="code__file">agent — run on every host you want to watch</span>
+      <button class="copy" data-copy="code-agent">Copy</button>
+    </div>
+<pre id="code-agent"><span class="c"># host networking + pid:host give accurate interface and process metrics</span>
+<span class="k">docker run</span> -d <span class="f">--name</span> pymon-agent <span class="f">--restart</span> unless-stopped \
+  <span class="f">--network</span> host <span class="f">--pid</span> host \
+  <span class="f">-v</span> pymon-agent-plugins:/app/plugins \
+  <span class="f">-v</span> /var/run/docker.sock:/var/run/docker.sock \
+  <span class="f">-e</span> PYMON_SERVER=<span class="s">"https://pymon.example.com/api"</span> \
+  <span class="f">-e</span> PYMON_AGENTID=<span class="s">"my-host"</span> \
+  <span class="f">-e</span> PYMON_API_KEY=<span class="s">"your-agent-api-key"</span> \
+  ghcr.io/mcfetz/pymon-agent:latest</pre>
+  </div>
+
+  <div class="tip reveal" style="margin-top:1.05rem">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+    <div>
+      <strong>Change the default credentials before you expose the UI.</strong>
+      They exist so a fresh install is reachable, not so they can stay. Set
+      <code>PYMON_ADMIN_PASSWORD</code> on the very first boot, or change it from the
+      Account page afterwards. Cross-origin requests are blocked by default, so a
+      missing <code>PYMON_CORS_ORIGINS</code> is the most common reason the UI shows
+      network errors right after login.
+    </div>
+  </div>
+</section>
+
+<!-- ============================== repos ============================== -->
+<section id="repos" class="wrap">
+  <div class="section-head center">
+    <span class="eyebrow">Source</span>
+    <h2>Read it, fork it, run it yourself</h2>
+  </div>
+
+  <div class="grid grid-3">
+    <a class="repo reveal" href="https://github.com/mcfetz/pymon-server" target="_blank" rel="noopener">
+      <div class="repo__top">
+        <span class="repo__name">pymon-server</span>
+        <span class="repo__lang">Python</span>
+      </div>
+      <span class="repo__desc">Rule engine, metric store, alarms, notifications, executors, cron and the plugin registry. REST API with Swagger UI.</span>
+      <span class="repo__meta">mcfetz/pymon-server</span>
+    </a>
+
+    <a class="repo reveal" href="https://github.com/mcfetz/pymon-web" target="_blank" rel="noopener">
+      <div class="repo__top">
+        <span class="repo__name">pymon-web</span>
+        <span class="repo__lang">Svelte</span>
+      </div>
+      <span class="repo__desc">Dashboards, metrics, alarm history and the full admin UI. Installable as a PWA, dark and light.</span>
+      <span class="repo__meta">mcfetz/pymon-web</span>
+    </a>
+
+    <a class="repo reveal" href="https://github.com/mcfetz/pymon-agent" target="_blank" rel="noopener">
+      <div class="repo__top">
+        <span class="repo__name">pymon-agent</span>
+        <span class="repo__lang">Python</span>
+      </div>
+      <span class="repo__desc">Runs your plugins, pushes the metrics, keeps its own state and watches itself. systemd unit or container.</span>
+      <span class="repo__meta">mcfetz/pymon-agent</span>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================== footer ============================== -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="#top">
+          <img src="assets/logo.svg" alt="" width="28" height="28" style="border-radius:8px">
+          <span>pymon</span>
+        </a>
+        <p style="margin-top:.8rem;font-size:.9rem;max-width:24rem">
+          Self-hosted monitoring with rules you control and data that stays yours.
+        </p>
+      </div>
+
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#stack">The stack</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#rules">Rule engine</a></li>
+          <li><a href="#plugins">Plugins</a></li>
+          <li><a href="#self-host">Self-host</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Repositories</h4>
+        <ul>
+          <li><a href="https://github.com/mcfetz/pymon-server" target="_blank" rel="noopener">pymon-server</a></li>
+          <li><a href="https://github.com/mcfetz/pymon-web" target="_blank" rel="noopener">pymon-web</a></li>
+          <li><a href="https://github.com/mcfetz/pymon-agent" target="_blank" rel="noopener">pymon-agent</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Documentation</h4>
+        <ul>
+          <li><a href="https://github.com/mcfetz/pymon-server#readme">Server README</a></li>
+          <li><a href="https://github.com/mcfetz/pymon-web#readme">Web README</a></li>
+          <li><a href="https://github.com/mcfetz/pymon-server/releases">Releases</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 pymon. Open source software.</span>
+      <span class="muted">Built with Flask, Svelte and far too much time spent on counter direction labels.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* sticky header state */
+  var header = document.querySelector('.site-header');
+  var onScroll = function () {
+    header.classList.toggle('scrolled', window.scrollY > 12);
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* mobile navigation */
+  var toggle = document.getElementById('navToggle');
+  var links = document.getElementById('navLinks');
+  toggle.addEventListener('click', function () {
+    var open = links.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') {
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  /* scroll reveal — the start state is gated behind .js, so this failing is
+     never fatal; the failsafe below covers the case where the observer exists
+     but never delivers a single callback. */
+  var revealables = document.querySelectorAll('.reveal');
+  var revealed = 0;
+
+  function show(el, delay) {
+    setTimeout(function () {
+      el.classList.add('in');
+      revealed++;
+    }, delay || 0);
+  }
+
+  if ('IntersectionObserver' in window && revealables.length) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry, i) {
+        if (!entry.isIntersecting) return;
+        io.unobserve(entry.target);
+        show(entry.target, Math.min(i * 55, 220));
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    revealables.forEach(function (el) { io.observe(el); });
+
+    /* Anything already on screen at load reveals without waiting for a scroll. */
+    revealables.forEach(function (el) {
+      if (el.getBoundingClientRect().top < window.innerHeight) show(el);
+    });
+
+    /* Observer registered but never fired: show everything rather than leave
+       the page half blank. */
+    setTimeout(function () {
+      if (revealed === 0) {
+        revealables.forEach(function (el) { el.classList.add('in'); });
+      }
+    }, 2500);
+  } else {
+    revealables.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* scroll spy */
+  var sections = Array.prototype.slice.call(
+    document.querySelectorAll('main section[id]')
+  );
+  var navAnchors = Array.prototype.slice.call(
+    document.querySelectorAll('.nav-links a[href^="#"]')
+  );
+  function spy() {
+    var y = window.scrollY + 120;
+    var current = '';
+    sections.forEach(function (s) {
+      if (s.offsetTop <= y) current = s.id;
+    });
+    navAnchors.forEach(function (a) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  spy();
+  window.addEventListener('scroll', spy, { passive: true });
+
+  /* copy buttons — copy the text content, markup stripped */
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var target = document.getElementById(btn.dataset.copy);
+      if (!target) return;
+      var text = target.innerText;
+
+      var done = function () {
+        var original = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('done');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('done');
+        }, 1600);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } else {
+        fallback();
+      }
+
+      function fallback() {
+        var sel = window.getSelection();
+        var range = document.createRange();
+        range.selectNodeContents(target);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        try { document.execCommand('copy'); } catch (err) { /* no-op */ }
+        sel.removeAllRanges();
+        done();
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
