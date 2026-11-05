@@ -124,7 +124,7 @@
   </div>
 
   <div class="stats">
-    <div class="stat"><div class="stat__num">19</div><div class="stat__label">metric plugins</div></div>
+    <div class="stat"><div class="stat__num">23</div><div class="stat__label">metric plugins</div></div>
     <div class="stat"><div class="stat__num">9</div><div class="stat__label">rule conditions</div></div>
     <div class="stat"><div class="stat__num">4</div><div class="stat__label">evaluation scopes</div></div>
     <div class="stat"><div class="stat__num">3</div><div class="stat__label">services, your metal</div></div>
@@ -173,6 +173,11 @@
         including a one-shot, id-batched migration of an existing database. A
         built-in Swagger UI documents every endpoint.
       </p>
+      <p>
+        Admin and user roles, revocable JWT sessions and an append-only audit
+        trail make it clear who acknowledged an alarm, changed a config or added
+        a note.
+      </p>
     </article>
 
     <article class="card reveal">
@@ -187,6 +192,8 @@
       <p>
         Installable as a PWA with web push, and it ships an in-browser plugin
         editor with syntax checking so you never leave the UI to fix a plugin.
+        Alarm notes, per-value metric notes and a searchable activity feed keep
+        the story behind a change visible.
       </p>
     </article>
   </div>
@@ -331,7 +338,19 @@
     <article class="card reveal">
       <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
       <h3>Alarms with context</h3>
-      <p>Detail view shows nearby same-rule alarms on both sides of the current one with their signed distance, per-rule incident statistics instead of a useless alarm-to-alarm median, plus snoozes and acknowledgements.</p>
+      <p>Detail view shows nearby same-rule alarms on both sides of the current one with their signed distance, per-rule incident statistics instead of a useless alarm-to-alarm median, plus snoozes, acknowledgements and the actor who cleared the alarm.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 8h8M8 11h5"/></svg></div>
+      <h3>Notes that live on the timeline</h3>
+      <p>Attach a note to an open alarm — why it was snoozed, what is being done — or to one individual metric value. Metric notes become amber markers in the chart, are listed under it, and open from a pinned tooltip that works on touch screens too.</p>
+    </article>
+
+    <article class="card reveal">
+      <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <h3>Who changed what</h3>
+      <p>Admin and user roles, revocable JWT sessions and an append-only activity feed record acknowledgements, snoozes, notes, config changes, user changes and maintenance runs — with secrets redacted from the audit details.</p>
     </article>
 
     <article class="card reveal">
@@ -355,7 +374,7 @@
     <article class="card reveal">
       <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
       <h3>Boring where it counts</h3>
-      <p>JWT sessions for the UI, per-agent API keys compared in constant time, login rate limiting, plugin paths checked against a strict allowlist, executor commands run without a shell, and atomic config writes.</p>
+      <p>JWT sessions with revocable token versions, admin/user roles, append-only audit records, per-agent API keys compared in constant time, login rate limiting, plugin paths checked against a strict allowlist, executor commands run without a shell, and atomic config writes.</p>
     </article>
   </div>
 </section>
@@ -429,7 +448,7 @@
 <section id="plugins" class="wrap">
   <div class="section-head center">
     <span class="eyebrow">Plugins</span>
-    <h2>19 collectors, and you can write the twentieth</h2>
+    <h2>23 collectors, and you can write the twenty-fourth</h2>
     <p class="lede">
       A plugin is a Python file that exposes a <code>run(config)</code> function and
       returns a flat dictionary of metric values. The server ships them, the agent
@@ -470,25 +489,37 @@
       <h3>Telco &amp; budget</h3>
       <p>A DSL modem line in real detail, and provider balances as alertable numbers.</p>
       <div class="chips">
-        <span class="chip">vigor130</span><span class="chip">ucg_eth4</span>
-        <span class="chip">openrouter-costs</span><span class="chip">twilio-costs</span>
+        <span class="chip">vigor130</span><span class="chip">vigor167</span>
+        <span class="chip">ucg_eth4</span><span class="chip">openrouter-costs</span>
+        <span class="chip">twilio-costs</span>
+      </div>
+    </div>
+
+    <div class="plugin-group reveal">
+      <h3>Home &amp; integrations</h3>
+      <p>Smart-home telemetry through the Homey app collector, and GitHub repository health as alertable metrics.</p>
+      <div class="chips">
+        <span class="chip">homey_devices</span><span class="chip">homey_system</span>
+        <span class="chip">github</span>
       </div>
     </div>
   </div>
 
   <div class="grid grid-2" style="margin-top:1.05rem">
     <article class="card reveal">
-      <span class="card-tag">vigor130</span>
+      <span class="card-tag">vigor130 · vigor167</span>
       <h3>A DSL line, not just "up" or "down"</h3>
       <p>
-        Scrapes the authenticated status page of a DrayTek Vigor 130 and reports sync
-        rates, SNR, attenuation, line state, error counters and system uptime per
-        direction. A persistent state file turns raw counters into deltas and
-        per-hour rates, and distinguishes a line resync from a modem reboot.
+        The Vigor 130 reads its authenticated status page; the Vigor 167 uses the
+        DrayOS management CLI over SSH and pulls the stream and error tables from
+        the monitoring page. Both report sync rates, SNR, attenuation, line state,
+        error counters and uptime per direction.
       </p>
       <p>
-        Credentials and session tokens are never emitted, and a failed scrape only
-        lowers a success flag — it can never fabricate an outage.
+        A persistent state file turns raw counters into deltas and per-hour rates,
+        and distinguishes a line resync from a modem reboot. Credentials and
+        session tokens are never emitted, and a failed read only lowers a success
+        flag — it can never fabricate an outage.
       </p>
     </article>
 
@@ -593,7 +624,7 @@
         <span class="repo__name">pymon-server</span>
         <span class="repo__lang">Python</span>
       </div>
-      <span class="repo__desc">Rule engine, metric store, alarms, notifications, executors, cron and the plugin registry. REST API with Swagger UI.</span>
+      <span class="repo__desc">Rule engine, metric store, alarms, notes, users, audit trail, notifications, executors, cron and the plugin registry. REST API with Swagger UI.</span>
       <span class="repo__meta">mcfetz/pymon-server</span>
     </a>
 
@@ -602,7 +633,7 @@
         <span class="repo__name">pymon-web</span>
         <span class="repo__lang">Svelte</span>
       </div>
-      <span class="repo__desc">Dashboards, metrics, alarm history and the full admin UI. Installable as a PWA, dark and light.</span>
+      <span class="repo__desc">Dashboards, metrics with per-value notes, alarm history, user management and the full admin UI. Installable as a PWA, dark and light.</span>
       <span class="repo__meta">mcfetz/pymon-web</span>
     </a>
 
